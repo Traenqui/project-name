@@ -1,0 +1,19 @@
+{
+  "_checkout": null,
+  "_copy_without_render": [],
+  "_output_dir": "/mnt/c/repos/private",
+  "_repo_dir": "cookie-jar/python",
+  "_template": "cookie-jar/python",
+  "author": "Jonas Gerber",
+  "compatible_python_versions": "^3.12",
+  "copyright_year": "2024",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "73141623+Traenqui@users.noreply.github.com",
+  "friendly_name": "Project Name",
+  "github_user": "Traenqui",
+  "license": "MIT",
+  "package_name": "project_name",
+  "project_description": "A short description of the project",
+  "project_name": "project-name",
+  "version": "0.0.0"
+}
