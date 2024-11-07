@@ -68,13 +68,13 @@ jobs:
         run: |
           import hashlib
           import sys
-
-          python = "py{}.{}".format(*sys.version_info[:2])
+          python = f"py{sys.version_info[0]}.{sys.version_info[1]}"
           payload = sys.version.encode() + sys.executable.encode()
           digest = hashlib.sha256(payload).hexdigest()
-          result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest[:8])
+          result = f"${{ runner.os }}-{python}-{digest[:8]}-pre-commit"
 
-          print("::set-output name=result::{}".format(result))
+          with open(os.environ["GITHUB_ENV"], "a") as file:
+              file.write(f"RESULT={result}\n")
 
       - name: Restore pre-commit cache
         uses: actions/cache@v4
@@ -88,6 +88,9 @@ jobs:
       - name: Run Nox
         run: |
           nox --python=${{ matrix.python }}
+
+      - name: List coverage files
+        run: ls -alh .coverage*
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
@@ -146,5 +149,7 @@ jobs:
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4.6.0
+        with:
+          files: coverage.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
