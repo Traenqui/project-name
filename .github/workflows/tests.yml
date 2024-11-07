@@ -68,6 +68,7 @@ jobs:
         run: |
           import hashlib
           import sys
+          import os
           python = f"py{sys.version_info[0]}.{sys.version_info[1]}"
           payload = sys.version.encode() + sys.executable.encode()
           digest = hashlib.sha256(payload).hexdigest()
