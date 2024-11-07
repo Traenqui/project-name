@@ -90,8 +90,8 @@ jobs:
         run: |
           nox --python=${{ matrix.python }}
 
-      - name: List coverage files
-        run: ls -alh .coverage*
+      - name: List files
+        run: ls -alh
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
