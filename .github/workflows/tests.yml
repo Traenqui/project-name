@@ -1,8 +1,8 @@
 name: Tests
 
 on:
-  - push
-  - pull_request
+  push:
+  pull_request:
 
 jobs:
   tests:
@@ -41,31 +41,20 @@ jobs:
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Upgrade pip in virtual environments
-        shell: python
-        run: |
-          import os
-          import pip
-
-          with open(os.environ["GITHUB_ENV"], mode="a") as io:
-              print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
-
-      - name: Install Poetry
+      - name: Install Poetry and Nox using pipx
         run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
-          poetry --version
-
-      - name: Install Nox
-        run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
           pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          poetry --version
           nox --version
 
       - name: Compute pre-commit cache key
         if: matrix.session == 'pre-commit'
         id: pre-commit-cache
-        shell: python
         run: |
+          echo "pre-commit cache key is calculated"
+          python - <<EOF
           import hashlib
           import sys
           import os
@@ -73,9 +62,9 @@ jobs:
           payload = sys.version.encode() + sys.executable.encode()
           digest = hashlib.sha256(payload).hexdigest()
           result = f"${{ runner.os }}-{python}-{digest[:8]}-pre-commit"
-
           with open(os.environ["GITHUB_ENV"], "a") as file:
               file.write(f"RESULT={result}\n")
+          EOF
 
       - name: Restore pre-commit cache
         uses: actions/cache@v4
@@ -86,16 +75,13 @@ jobs:
           restore-keys: |
             ${{ steps.pre-commit-cache.outputs.result }}-
 
-      - name: Run Nox
+      - name: Run Nox session
         run: |
-          nox --python=${{ matrix.python }}
-
-      - name: List files
-        run: ls -alh
+          nox --session=${{ matrix.session }} --python=${{ matrix.python }}
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
-        uses: "actions/upload-artifact@v4"
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-data
           path: ".coverage.*"
@@ -124,15 +110,12 @@ jobs:
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Install Poetry
+      - name: Install Poetry and Nox using pipx
         run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
-          poetry --version
-
-      - name: Install Nox
-        run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
           pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          poetry --version
           nox --version
 
       - name: Download coverage data
@@ -140,15 +123,15 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Combine coverage data and display human readable report
+      - name: Combine coverage data and display human-readable report
         run: |
           nox --session=coverage
 
-      - name: Create coverage report
+      - name: Create coverage report in XML format
         run: |
-          nox --session=coverage -- xml
+          nox --session=coverage -- --xml
 
-      - name: Upload coverage report
+      - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v4.6.0
         with:
           files: coverage.xml
