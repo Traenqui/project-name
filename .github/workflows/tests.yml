@@ -134,7 +134,7 @@ jobs:
           nox --session=coverage -- xml
 
       - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v4.6.0
+        uses: codecov/codecov-action@v5.0.7
         with:
           files: coverage.xml
         env:
